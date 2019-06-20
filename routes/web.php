@@ -11,6 +11,22 @@
 |
 */
 
-$router->get('/', function () use ($router) {
+$router->get('/',['as' => 'Home', function () use ($router) {
     return $router->app->version();
+}]);
+
+$router->get('hello',function () use($router){
+    return 'Hello World';
+});
+
+$router->post('test', ['as' => 'test', 'uses' => 'ExampleController@Test']);
+$router->get('add-device', ['as' => 'add-device', 'uses' => 'Device@addDevice']);
+$router->group(['prefix' => 'test1'], function () use($router){
+    $router->get('test11',function (){
+        echo "test1";
+    });
+
+    $router->get('test12',function (){
+        echo "test2";
+    });
 });
