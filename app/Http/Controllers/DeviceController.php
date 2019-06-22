@@ -21,18 +21,33 @@ class DeviceController extends Controller
 
     public function addDevice(DeviceService $device, Request $request){
 
+        $name = $request->post('name');
+        $type = $request->post('type');
+        $role = $request->post('role');
+        $location = $request->post('location');
+        $ipAdress = $request->post('IP_adress');
+        $description = $request->post('description');
+        $status = $request->post('status');
 
-        $postDevice = new Device();
-        $postDevice->setName($request->post('name'));
-        $postDevice->setTypeOfDevice($request->post('type'));
-        $postDevice->setRole($request->post('role'));
-        $postDevice->setLocation($request->post('location'));
-        $postDevice->setIPAdress($request->post('IP_adress'));
-        $postDevice->setDescription($request->post('description'));
-        $postDevice->setStatus('status');
+        if(isset($name)
+            && isset($type)
+            && isset($role)
+            && isset($location)
+            && isset($ipAdress)
+            && isset($description)
+            && isset($status)) {
+            $postDevice = new Device();
+            $postDevice->setName($name);
+            $postDevice->setTypeOfDevice($type);
+            $postDevice->setRole($role);
+            $postDevice->setLocation($location);
+            $postDevice->setIPAdress($ipAdress);
+            $postDevice->setDescription($description);
+            $postDevice->setStatus($status);
+            $device->addDevice($postDevice);
+            return response()->json(['status' => 'true']);
+        }
 
-        $device->addDevice($postDevice);
-        return response()->json($postDevice);
-
+        return response()->json(['status' => 'false']);
     }
 }
