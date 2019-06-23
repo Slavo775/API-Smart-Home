@@ -9,8 +9,10 @@
 namespace App\Http\Controllers;
 
 
+use App\Exceptions\ipAdressIsNotValidException;
 use App\Providers\AppServiceDevice;
 use App\Services\DeviceService;
+use App\Services\ValidationService;
 use Carbon\Laravel\ServiceProvider;
 use App\Device;
 use Illuminate\Container\Container;
@@ -19,13 +21,26 @@ use Illuminate\Http\Request;
 class DeviceController extends Controller
 {
 
-    public function addDevice(DeviceService $device, Request $request){
+    /**
+     *this function validate and add device to the database
+     *@param DeviceService $device
+     *@param ValidationService $validate
+     *@param Request $request
+     *@return \Illuminate\Http\JsonResponse
+     */
+    public function addDevice(DeviceService $device, ValidationService $validate , Request $request) :\Illuminate\Http\JsonResponse
+    {
 
         $name = $request->post('name');
         $type = $request->post('type');
         $role = $request->post('role');
         $location = $request->post('location');
-        $ipAdress = $request->post('IP_adress');
+        try{
+            $ipAddress = $validate->validateIPAddress($request->post('IP_address'));
+        }
+        catch (ipAdressIsNotValidException $ex){
+           return response()->json(['status' => 'false' , 'message' => $ex->getMessage()]);
+        }
         $description = $request->post('description');
         $status = $request->post('status');
 
@@ -33,7 +48,7 @@ class DeviceController extends Controller
             && isset($type)
             && isset($role)
             && isset($location)
-            && isset($ipAdress)
+            && isset($ipAddress)
             && isset($description)
             && isset($status)) {
             $postDevice = new Device();
@@ -41,13 +56,14 @@ class DeviceController extends Controller
             $postDevice->setTypeOfDevice($type);
             $postDevice->setRole($role);
             $postDevice->setLocation($location);
-            $postDevice->setIPAdress($ipAdress);
+            $postDevice->setIPAdress($ipAddress);
             $postDevice->setDescription($description);
             $postDevice->setStatus($status);
             $device->addDevice($postDevice);
             return response()->json(['status' => 'true']);
         }
 
-        return response()->json(['status' => 'false']);
+        return response()->json(['status' => 'false', 'message' => 'Please fill all field!']);
+
     }
 }
