@@ -30,35 +30,33 @@ class DeviceController extends Controller
      */
     public function addDevice(DeviceService $device, ValidationService $validate , Request $request) :\Illuminate\Http\JsonResponse
     {
-
-        $name = $request->post('name');
-        $type = $request->post('type');
-        $role = $request->post('role');
-        $location = $request->post('location');
+        $data = json_decode($request->getContent());
+        $name = $data->name;
+        $type = $data->type;
+        $role = $data->role;
+        $location = $data->location;
+        $IP_address = $data->IP;
+        $description = $data->description;
         try{
-            $ipAddress = $validate->validateIPAddress($request->post('IP_address'));
+            $IP_address = $validate->validateIPAddress($IP_address);
         }
         catch (ipAdressIsNotValidException $ex){
            return response()->json(['status' => 'false' , 'message' => $ex->getMessage()]);
         }
-        $description = $request->post('description');
-        $status = $request->post('status');
-
         if(isset($name)
             && isset($type)
             && isset($role)
             && isset($location)
-            && isset($ipAddress)
-            && isset($description)
-            && isset($status)) {
+            && isset($IP_address)
+            && isset($description)) {
             $postDevice = new Device();
             $postDevice->setName($name);
             $postDevice->setTypeOfDevice($type);
             $postDevice->setRole($role);
             $postDevice->setLocation($location);
-            $postDevice->setIPAdress($ipAddress);
+            $postDevice->setIPAdress($IP_address);
             $postDevice->setDescription($description);
-            $postDevice->setStatus($status);
+//            $postDevice->setStatus($status);
             $device->addDevice($postDevice);
             return response()->json(['status' => 'true']);
         }

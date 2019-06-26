@@ -19,17 +19,17 @@ class ValidationService
      *@throws ipAdressIsNotValidException
      *@return string
      */
-    public function validateIPAddress(?string $IP_address) :?string
+    public function validateIPAddress(?string $IP_address) :string
     {
         if(!isset($IP_address)){
-            throw new ipAdressIsNotValidException('This ip Address is not valid!');
+            throw new ipAdressIsNotValidException('IP_address is empty');
         }
-        $regex = "^(([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]).){3}.([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$" ;
+        $regex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$^" ;
 
         if (preg_match($regex, $IP_address)) {
             return $IP_address;
         }
-        throw new ipAdressIsNotValidException('This ip Address is not valid!');
+        throw new ipAdressIsNotValidException(/*'This ip Address is not valid!'*/ $IP_address);
 
     }
 }
