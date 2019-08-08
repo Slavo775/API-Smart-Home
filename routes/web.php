@@ -22,6 +22,7 @@ $router->get('hello',function () use($router){
 $router->post('test', ['as' => 'test', 'uses' => 'ExampleController@Test']);
 $router->post('add-device', ['as' => 'add-device', 'uses' => 'DeviceController@addDevice']);
 $router->post('add-room', ['as' => 'add-room', 'uses' => 'RoomController@addRoom']);
+$router->get('add-device-only-ip', ['as' => 'add-device-only-ip', 'uses' => 'DeviceController@addDeviceIp']);
 $router->group(['prefix' => 'test1'], function () use($router){
     $router->get('test11',function (){
         echo "test1";

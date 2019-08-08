@@ -16,6 +16,7 @@ use App\Services\ValidationService;
 use Carbon\Laravel\ServiceProvider;
 use App\Device;
 use Illuminate\Container\Container;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DeviceController extends Controller
@@ -63,5 +64,48 @@ class DeviceController extends Controller
 
         return response()->json(['status' => 'false', 'message' => 'Please fill all field!']);
 
+    }
+
+    /**
+     * This method recieve ip address of device. Send request on this IP.
+     * Response is all information abou device this information set on model device and insert to database.
+     * @param DeviceService $device
+     * @param ValidationService $validation
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function addDeviceIp(DeviceService $device, ValidationService $validation, Request $request){
+        try{
+            $json = file_get_contents('http://192.168.31.14:8080/deviceStatus');
+        }catch (\Exception $ex){
+            return response()->json(['error' => true, 'message' => 'Wrong IP or device down']);
+        }
+        $jsonDecode = json_decode($json);
+        try{
+           $validation->validateIPAddress($jsonDecode->ip);
+        }
+        catch (ipAdressIsNotValidException $ex){
+            return response()->json(['status' => 'false' , 'message' => $ex->getMessage()]);
+        }
+        if(isset($jsonDecode->name)
+            && isset($jsonDecode->type)
+            && isset($jsonDecode->role)
+            && isset($jsonDecode->mac)
+            && isset($jsonDecode->ip)
+            && isset($jsonDecode->description)){
+            $postDevice = new Device();
+            $postDevice->setName($jsonDecode->name);
+            $postDevice->setTypeOfDevice($jsonDecode->type);
+            $postDevice->setRole($jsonDecode->role);
+            $postDevice->setMac($jsonDecode->mac);
+            $postDevice->setIPAdress($jsonDecode->ip);
+            $postDevice->setDescription($jsonDecode->description);
+            $status = $device->addDevice($postDevice);
+            if(!empty($status)){
+                return response()->json(['status' => 'ok']);
+            }
+            return response()->json(['error' => true, 'message' => 'Cannot insert to database']);
+        }
+        return response()->json(['error' => true, 'message' => 'Parameters is not correct!']);
     }
 }
