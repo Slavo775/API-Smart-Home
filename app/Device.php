@@ -45,7 +45,7 @@ class Device extends Model
      * @param int $mac
      * @return Device
      */
-    public function setMac(int $mac) :Device
+    public function setMac(string $mac) :Device
     {
         $this->mac = $mac;
         return $this;

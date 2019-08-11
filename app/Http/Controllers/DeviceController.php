@@ -75,10 +75,11 @@ class DeviceController extends Controller
      * @return JsonResponse
      */
     public function addDeviceIp(DeviceService $device, ValidationService $validation, Request $request){
+        $data = json_decode($request->getContent());
         try{
-            $json = file_get_contents('http://192.168.31.14:8080/deviceStatus');
+            $json = file_get_contents('http://'. $data->IP .':8080/deviceStatus');
         }catch (\Exception $ex){
-            return response()->json(['error' => true, 'message' => 'Wrong IP or device down']);
+            return response()->json(['status' => 'false', 'message' => 'Wrong IP or device down '. $data->IP.':8080/deviceStatus']);
         }
         $jsonDecode = json_decode($json);
         try{
@@ -104,8 +105,8 @@ class DeviceController extends Controller
             if(!empty($status)){
                 return response()->json(['status' => 'ok']);
             }
-            return response()->json(['error' => true, 'message' => 'Cannot insert to database']);
+            return response()->json(['status' => 'false', 'message' => 'Cannot insert to database']);
         }
-        return response()->json(['error' => true, 'message' => 'Parameters is not correct!']);
+        return response()->json(['status' => 'false', 'message' => 'Parameters is not correct!']);
     }
 }

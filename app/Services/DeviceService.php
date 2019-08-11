@@ -40,9 +40,9 @@ class DeviceService
      */
     public function addDevice(Device $device): bool
     {
-        $sql = DB::raw('INSERT INTO device (type, role, mac, ip, name, description) VALUES (:Type, :role, :mac, :IP, :nam, :descr)');
+        $sql = DB::raw('INSERT INTO device (name, ip,  mac, description, type) VALUES ( :nam, :IP, :mac, :descr, :Type)');
         $results = DB::insert($sql,
-            ['Type' => $device->getTypeOfDevice(), 'role' => $device->getRole(), 'location' => $device->getMac(), 'IP' => $device->getIPAdress(), 'nam' => $device->getName(), 'descr' => $device->getDescription()]);
+            ['Type' => $device->getTypeOfDevice(), 'IP' => $device->getIPAdress(), 'nam' => $device->getName(), 'descr' => $device->getDescription(), 'mac' => $device->getMac() ]);
         return $results;
 
     }
