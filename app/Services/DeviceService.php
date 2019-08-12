@@ -47,5 +47,15 @@ class DeviceService
 
     }
 
+    public function findDeviceByMac(string $mac){
+        $sql = DB::raw('SELECT ip FROM device WHERE mac = :mac');
+        $result = DB::select($sql,
+            ['mac' => $mac]);
+        if(!empty($result)){
+            return ['status' => false, 'ip' => $result];
+        }
+        return ['status' => 'ok'];
+    }
+
 
 }
