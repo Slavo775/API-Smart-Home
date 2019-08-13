@@ -29,7 +29,27 @@ class Device extends Model
     private $Description;
     /** @var string */
     private $Status;
+    /** @var string */
+    private $mac;
 
+
+    /**
+     * @return string
+     */
+    public function getMac() :?string
+    {
+        return $this->mac;
+    }
+
+    /**
+     * @param int $mac
+     * @return Device
+     */
+    public function setMac(string $mac) :Device
+    {
+        $this->mac = $mac;
+        return $this;
+    }
     /**
      * @return int
      */

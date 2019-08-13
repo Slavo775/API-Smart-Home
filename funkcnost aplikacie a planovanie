@@ -1,0 +1,26 @@
+Pridavanie zariadeni
+
+pridavanie zariadeni bude realizovany zadanim ip adresy pouzivatelom vo frondendovaj appke.
+Appka posle request na backend s ip adresou najskor ho ale zvaliduje. Ak je ip adresa spravna
+odosle request backend ip adresu prijme este raz ju zvaliduje a odosle request na pozadovanu ip adresu
+pre ziskanie dodatocnych informacii.
+
+(Bolo by fajn spravit aj aktivne vyhladavanie zariadeni ktore nie su este zaregistrovane
+poslal by sa broadcast s poziadavkou ip adreis zariadeni zariadenia by poslali svoje informacie a vytvorena aplikacia by pozrela do
+DB ci toto zariadenie uz je zaregistrovane alebo nie ak nie ip adresa by sa zapisala do DB a nasledne by si pouzivatel zvolil ci zariadenie
+bude zaregistrovane alebo nie ak nie nastavi sa v DB zariadeniu active 0 nevymaze sa)
+
+Po ziskani dodatocnych informacii BE tieto informacie zapise do DB tym padom sa registracia konci. Popri tejto registracii by sa taktiez prepisala cache pre validaciu.
+Pri pridani zariadenia na FE by bolo tlacidlo TEST ktorym by sa dalo otestovat ci na zadanej IP je nejake zariadenie popripade odoslalo by sa meno
+zariadenia pre identifikaciu zariadenia.
+
+Validacia zariadenia:
+
+validacia zariadenia (momentalne iba pre ovladace) zbiehal by cron ktory by si vytiahol vsetky zariadenia z DB a zacal by
+posielat request na jednotlive zariadenia ktore by sa mu hlasili napr status => ok tym padom validacia prebehne v poriadku.
+Ak validacia nezbehne teda zariadenie neodpovie zapise sa tento stav ako error do tabulky status_log. Cron moze zbiehat kazdu hodinu
+pritom by si mohol vytvorit cache v ktorej by boli vsetky ip z DB.
+Ak zbehne cron a zariadenie neodpoveda ale pri dalsom zbehnuti cronu uz zariadenie odpovie zapise sa do status_log zaznam s typm warning a erroru pred
+tym sa nastavi resolved true.
+Toto je zakladna validacia pre vsetky zariadenia ktore budu zaregistrovane pre dalsie projekty sa nasledne budu doplnat validacie.
+
