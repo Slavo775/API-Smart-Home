@@ -23,6 +23,9 @@ $router->post('test', ['as' => 'test', 'uses' => 'ExampleController@Test']);
 $router->post('add-device', ['as' => 'add-device', 'uses' => 'DeviceController@addDevice']);
 $router->post('add-room', ['as' => 'add-room', 'uses' => 'RoomController@addRoom']);
 $router->post('add-device-only-ip', ['as' => 'add-device-only-ip', 'uses' => 'DeviceController@addDeviceIp']);
+$router->group(['prefix' => 'status'], function () use($router){
+    $router->get('all-unresolved', ['as' => 'all-unresolved', 'uses' => 'StatusController@getAllUnresolvedStatus']);
+});
 $router->group(['prefix' => 'test1'], function () use($router){
     $router->get('test11',function (){
         echo "test1";
