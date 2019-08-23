@@ -15,7 +15,22 @@ class StatusController extends Controller
 {
 
     public function getAllUnresolvedStatus(StatusService $statusService){
-       $status = $statusService->getAllStatus();
+       $status = [];
+       $errors = $statusService->getErrorStatus();
+       $warnings = $statusService->getWarningStatus();
+       $info = $statusService->getInfoStatus();
+       if($errors['status']){
+           $status['errors'] = $errors['result'];
+       }
+
+       if($warnings['status']){
+         $status['warnings'] = $warnings['result'];
+       }
+
+       if($info['status']){
+           $status['infos'] = $info['result'];
+       }
+
        if(!empty($status)){
            return response()->json(['status' => true, 'data' => $status]);
        }
