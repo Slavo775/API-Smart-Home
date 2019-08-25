@@ -10,10 +10,16 @@ namespace App\Http\Controllers;
 
 
 use App\Services\StatusService;
+use App\Status;
+use Illuminate\Http\Request;
 
 class StatusController extends Controller
 {
-
+    /**
+     * get all status with value 0 of column resolved
+     * @param StatusService $statusService
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getAllUnresolvedStatus(StatusService $statusService){
        $status = [];
        $errors = $statusService->getErrorStatus();
@@ -35,6 +41,20 @@ class StatusController extends Controller
            return response()->json(['status' => true, 'data' => $status]);
        }
        return response()->json(['status' => false, 'data' => null]);
+    }
+
+    public function setResolved(StatusService $statusService, Request $request){
+        $data = json_decode($request->getContent());
+        $statusModel = new Status();
+        if(isset($data->id_status)){
+            $statusModel->setIdStatus($data->id_status);
+            $status = $statusService->setResolvedStatus($statusModel);
+            if($status){
+                return response()->json(['status' => true]);
+            }
+            return response()->json(['status' => false]);
+        }
+        return response()->json(['status' => false]);
     }
 
 }

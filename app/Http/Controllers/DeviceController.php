@@ -10,12 +10,9 @@ namespace App\Http\Controllers;
 
 
 use App\Exceptions\ipAdressIsNotValidException;
-use App\Providers\AppServiceDevice;
 use App\Services\DeviceService;
 use App\Services\ValidationService;
-use Carbon\Laravel\ServiceProvider;
 use App\Device;
-use Illuminate\Container\Container;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

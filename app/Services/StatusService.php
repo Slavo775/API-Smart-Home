@@ -8,6 +8,7 @@
 
 namespace App\Services;
 
+use App\Status;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,11 @@ use phpDocumentor\Reflection\Types\Array_;
 
 class StatusService
 {
+    private const statusText = [
+        1 => 'Zariadenie nie je dosiahnuteľné',
+        2 => 'Zariadenie nebolo dosiahnuteľné',
+        3 => 'Neznáma chyba',
+    ];
     public function __construct()
     {
         /**
@@ -50,11 +56,14 @@ class StatusService
      */
     public function getErrorStatus(){
         $sql = DB::raw('SELECT * FROM status_log sl INNER JOIN device d ON sl.id_device = d.id_device WHERE sl.resolved = 0 AND sl.status_type = 1');
-        $result = DB::select($sql);
-        if(empty($result)){
+        $results = DB::select($sql);
+        if(empty($results)){
             return ['status' => false, 'result' => null];
         }
-        return ['status' => true, 'result' => $result];
+        foreach ($results as $key => $result){
+            $results[$key]->status_code = $this->getStatusText($result->status_code);
+        }
+        return ['status' => true, 'result' => $results];
     }
 
     /**
@@ -63,11 +72,14 @@ class StatusService
      */
     public function getWarningStatus(){
         $sql = DB::raw('SELECT * FROM status_log sl INNER JOIN device d ON sl.id_device = d.id_device WHERE sl.resolved = 0 AND sl.status_type = 2');
-        $result = DB::select($sql);
-        if(empty($result)){
+        $results = DB::select($sql);
+        if(empty($results)){
             return ['status' => false, 'result' => null];
         }
-        return ['status' => true, 'result' => $result];
+        foreach ($results as $key => $result){
+            $results[$key]->status_code = $this->getStatusText($result->status_code);
+        }
+        return ['status' => true, 'result' => $results];
     }
     /**
      * return all actual info
@@ -75,11 +87,37 @@ class StatusService
      */
     public function getInfoStatus(){
         $sql = DB::raw('SELECT * FROM status_log sl INNER JOIN device d ON sl.id_device = d.id_device WHERE sl.resolved = 0 AND sl.status_type = 3');
-        $result = DB::select($sql);
-        if(empty($result)){
+        $results = DB::select($sql);
+        if(empty($results)){
             return ['status' => false, 'result' => null];
         }
-        return ['status' => true, 'result' => $result];
+        foreach ($results as $key => $result){
+            $results[$key]->status_code = $this->getStatusText($result->status_code);
+        }
+        return ['status' => true, 'result' => $results];
+    }
+
+    /**
+     * return status text from status code
+     * @param int $statusCode
+     * @return mixed|string
+     */
+    private function getStatusText(int $statusCode){
+        return isset(StatusService::statusText[$statusCode]) ? StatusService::statusText[$statusCode] : 'Neznáma chyba!';
+    }
+
+    /**
+     * set column resolved value 1 of current status
+     * @param Status $status
+     * @return bool
+     */
+    public function setResolvedStatus(Status $status){
+        $sql = DB::raw('UPDATE status_log SET resolved = 1 WHERE id_status = :id_status');
+        $result = DB::update($sql, ['id_status' => $status->getIdStatus()]);
+        if(!empty($result)){
+            return true;
+        }
+        return false;
     }
 
 }
