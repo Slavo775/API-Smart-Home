@@ -21,6 +21,7 @@ class StatusService
         2 => 'Zariadenie nebolo dosiahnuteľné',
         3 => 'Neznáma chyba',
     ];
+
     public function __construct()
     {
         /**
@@ -41,10 +42,11 @@ class StatusService
      * return all unresolved status
      * @return array
      */
-    public function getAllStatus(){
+    public function getAllStatus()
+    {
         $sql = DB::raw('SELECT * FROM status_log sl INNER JOIN device d ON sl.id_device = d.id_device WHERE sl.resolved = 0');
         $result = DB::select($sql);
-        if(empty($result)){
+        if (empty($result)) {
             return ['status' => false];
         }
         return ['result' => $result];
@@ -54,13 +56,14 @@ class StatusService
      * return all unresolved error
      * @return array
      */
-    public function getErrorStatus(){
+    public function getErrorStatus()
+    {
         $sql = DB::raw('SELECT * FROM status_log sl INNER JOIN device d ON sl.id_device = d.id_device WHERE sl.resolved = 0 AND sl.status_type = 1');
         $results = DB::select($sql);
-        if(empty($results)){
+        if (empty($results)) {
             return ['status' => false, 'result' => null];
         }
-        foreach ($results as $key => $result){
+        foreach ($results as $key => $result) {
             $results[$key]->status_code = $this->getStatusText($result->status_code);
         }
         return ['status' => true, 'result' => $results];
@@ -70,28 +73,31 @@ class StatusService
      * return all unresolved warnings
      * @return array
      */
-    public function getWarningStatus(){
+    public function getWarningStatus()
+    {
         $sql = DB::raw('SELECT * FROM status_log sl INNER JOIN device d ON sl.id_device = d.id_device WHERE sl.resolved = 0 AND sl.status_type = 2');
         $results = DB::select($sql);
-        if(empty($results)){
+        if (empty($results)) {
             return ['status' => false, 'result' => null];
         }
-        foreach ($results as $key => $result){
+        foreach ($results as $key => $result) {
             $results[$key]->status_code = $this->getStatusText($result->status_code);
         }
         return ['status' => true, 'result' => $results];
     }
+
     /**
      * return all actual info
-     *@return array
+     * @return array
      */
-    public function getInfoStatus(){
+    public function getInfoStatus()
+    {
         $sql = DB::raw('SELECT * FROM status_log sl INNER JOIN device d ON sl.id_device = d.id_device WHERE sl.resolved = 0 AND sl.status_type = 3');
         $results = DB::select($sql);
-        if(empty($results)){
+        if (empty($results)) {
             return ['status' => false, 'result' => null];
         }
-        foreach ($results as $key => $result){
+        foreach ($results as $key => $result) {
             $results[$key]->status_code = $this->getStatusText($result->status_code);
         }
         return ['status' => true, 'result' => $results];
@@ -102,7 +108,8 @@ class StatusService
      * @param int $statusCode
      * @return mixed|string
      */
-    private function getStatusText(int $statusCode){
+    private function getStatusText(int $statusCode)
+    {
         return isset(StatusService::statusText[$statusCode]) ? StatusService::statusText[$statusCode] : 'Neznáma chyba!';
     }
 
@@ -111,10 +118,12 @@ class StatusService
      * @param Status $status
      * @return bool
      */
-    public function setResolvedStatus(Status $status){
-        $sql = DB::raw('UPDATE status_log SET resolved = 1 WHERE id_status = :id_status');
-        $result = DB::update($sql, ['id_status' => $status->getIdStatus()]);
-        if(!empty($result)){
+    public function setResolvedStatus(Status $status)
+    {
+        $sql = DB::raw('UPDATE status_log SET resolved = 1, resolved_text = :resolved_text, resolved_date = NOW() WHERE id_status = :id_status');
+        $result = DB::update($sql,
+            ['id_status' => $status->getIdStatus(), 'resolved_text' => $status->getResolvedText()]);
+        if (!empty($result)) {
             return true;
         }
         return false;

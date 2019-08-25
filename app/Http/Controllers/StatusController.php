@@ -46,8 +46,9 @@ class StatusController extends Controller
     public function setResolved(StatusService $statusService, Request $request){
         $data = json_decode($request->getContent());
         $statusModel = new Status();
-        if(isset($data->id_status)){
+        if(isset($data->id_status) && isset($data->status_text)){
             $statusModel->setIdStatus($data->id_status);
+            $statusModel->setResolvedText($data->status_text);
             $status = $statusService->setResolvedStatus($statusModel);
             if($status){
                 return response()->json(['status' => true]);

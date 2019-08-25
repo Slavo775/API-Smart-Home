@@ -24,6 +24,46 @@ class Status extends Model
     private $resolved;
     /** @var int */
     private $status_code;
+    /** @var string */
+    private $resolved_text;
+
+    /**
+     * @return string
+     */
+    public function getResolvedText(): string
+    {
+        return $this->resolved_text;
+    }
+
+    /**
+     * @param string $resolved_text
+     * @return Status
+     */
+    public function setResolvedText(string $resolved_text): Status
+    {
+        $this->resolved_text = $resolved_text;
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getResolvedDate(): \DateTime
+    {
+        return $this->resolved_date;
+    }
+
+    /**
+     * @param \DateTime $resolved_date
+     * @return Status
+     */
+    public function setResolvedDate(\DateTime $resolved_date): Status
+    {
+        $this->resolved_date = $resolved_date;
+        return $this;
+    }
+    /** @var \DateTime */
+    private $resolved_date;
 
     /**
      * @return int
