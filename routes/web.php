@@ -27,6 +27,10 @@ $router->group(['prefix' => 'status'], function () use($router){
     $router->get('all-unresolved', ['as' => 'all-unresolved', 'uses' => 'StatusController@getAllUnresolvedStatus']);
     $router->post('set-resolved', ['as' => 'set-resolved', 'uses' => 'StatusController@setResolved']);
 });
+$router->group(['prefix' => 'device'], function () use($router){
+   $router->get('all-device', ['as' => 'all-device', 'uses' => 'DeviceController@allDevice']);
+   $router->post('set-status', ['as' => 'set-status', 'uses' => 'DeviceController@setStatus']);
+});
 $router->group(['prefix' => 'test1'], function () use($router){
     $router->get('test11',function (){
         echo "test1";

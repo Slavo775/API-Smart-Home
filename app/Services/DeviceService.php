@@ -73,5 +73,39 @@ class DeviceService
         return ['result' => $result];
     }
 
+    /**
+     * @return array
+     */
+    public function findAllActiveDevice(){
+        $sql = DB::raw('SELECT * FROM device WHERE active = 1');
+        $result = DB::select($sql);
+        if(empty($result)){
+            return ['status' => false, 'result' => null];
+        }
+        return ['result' => $result, 'status' => $result];
+    }
+
+    /**
+     * @return array
+     */
+    public function findAllNonactiveDevice(){
+        $sql = DB::raw('SELECT * FROM device WHERE active = 0');
+        $result = DB::select($sql);
+        if(empty($result)){
+            return ['status' => false, 'result' => null];
+        }
+        return ['status' => true ,'result' => $result];
+    }
+
+    public function setActiveStatus(Device $device){
+        $sql = DB::raw('UPDATE device SET active = :active WHERE id_device = :id_device');
+        $bind = ['active' => $device->isActive(), 'id_device' => $device->getIDDevice()];
+        $result = DB::update($sql, $bind);
+        if(empty($result)){
+            return ['status' => false];
+        }
+        return ['status' => true];
+    }
+
 
 }

@@ -115,4 +115,39 @@ class DeviceController extends Controller
         }
         return response()->json(['status' => 'false', 'message' => 'Parameters is not correct!']);
     }
+
+    /**
+     * this function get all active and nonactive devices
+     * @param DeviceService $deviceService
+     * @return JsonResponse
+     */
+    public function allDevice(DeviceService $deviceService){
+        $resultActive = $deviceService->findAllActiveDevice();
+        $resultNonactive = $deviceService -> findAllNonactiveDevice();
+        if($resultActive['status']){
+            $result['active'] = $resultActive['result'];
+        }
+        if($resultNonactive['status']){
+            $result['nonactive'] = $resultNonactive['result'];
+        }
+        if(!empty($result)){
+            return response()->json(['status' => true, 'data' => $result]);
+        }
+        return response()->json(['status' => false, 'data' => null]);
+    }
+
+    public function setStatus(DeviceService $deviceService, Request $request){
+        $data = json_decode($request->getContent());
+        if(isset($data->id_device) && isset($data->active)){
+            $device = new Device();
+            $device->setIDDevice($data->id_device);
+            $device->setActive($data->active);
+            $result = $deviceService->setActiveStatus($device);
+            if(!empty($result['status'])){
+                return response()->json(['status' => true]);
+            }
+            return response()->json(['status' => false]);
+        }
+        return response()->json(['status' => false]);
+    }
 }

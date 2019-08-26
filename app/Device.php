@@ -31,6 +31,26 @@ class Device extends Model
     private $Status;
     /** @var string */
     private $mac;
+    /** @var boolean */
+    private $active;
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    /**
+     * @param bool $active
+     * @return Device
+     */
+    public function setActive(bool $active): Device
+    {
+        $this->active = $active;
+        return $this;
+    }
 
 
     /**
