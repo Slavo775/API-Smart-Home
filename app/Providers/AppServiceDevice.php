@@ -16,9 +16,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceDevice extends ServiceProvider
 {
-
-
-
     public  function register()
     {
         $this->app->bind('App\Services\DeviceService', function ($app) {
@@ -26,5 +23,4 @@ class AppServiceDevice extends ServiceProvider
         });
 
     }
-
 }

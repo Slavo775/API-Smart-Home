@@ -10,7 +10,9 @@ namespace App\Http\Controllers;
 
 
 use App\Exceptions\ipAdressIsNotValidException;
+use App\GroupHueLights;
 use App\Services\DeviceService;
+use App\Services\GroupHueLightsService;
 use App\Services\ValidationService;
 use App\Device;
 use Illuminate\Http\JsonResponse;
@@ -119,16 +121,25 @@ class DeviceController extends Controller
     /**
      * this function get all active and nonactive devices
      * @param DeviceService $deviceService
+     * @param GroupHueLightsService $groupHueLightsService
      * @return JsonResponse
      */
-    public function allDevice(DeviceService $deviceService){
+    public function allDevice(GroupHueLightsService $groupHueLightsService, DeviceService $deviceService){
         $resultActive = $deviceService->findAllActiveDevice();
-        $resultNonactive = $deviceService -> findAllNonactiveDevice();
+        $resultNonactive = $deviceService->findAllNonactiveDevice();
+        $resultActiveGroup = $groupHueLightsService->getAllActiveGroups();
+        $resultNonactiveGroup = $groupHueLightsService->getAllNonActiveGroups();
         if($resultActive['status']){
             $result['active'] = $resultActive['result'];
         }
         if($resultNonactive['status']){
             $result['nonactive'] = $resultNonactive['result'];
+        }
+        if($resultActiveGroup['status']){
+            $result['activeGroup'] = $resultActiveGroup['result'];
+        }
+        if($resultNonactiveGroup['status']){
+            $result['nonactiveGroup'] = $resultNonactiveGroup['result'];
         }
         if(!empty($result)){
             return response()->json(['status' => true, 'data' => $result]);
@@ -136,17 +147,28 @@ class DeviceController extends Controller
         return response()->json(['status' => false, 'data' => null]);
     }
 
-    public function setStatus(DeviceService $deviceService, Request $request){
+    public function setStatus(GroupHueLightsService $groupHueLightsService, DeviceService $deviceService, Request $request){
         $data = json_decode($request->getContent());
-        if(isset($data->id_device) && isset($data->active)){
-            $device = new Device();
-            $device->setIDDevice($data->id_device);
-            $device->setActive($data->active);
-            $result = $deviceService->setActiveStatus($device);
-            if(!empty($result['status'])){
-                return response()->json(['status' => true]);
+        if(isset($data->id_device) && isset($data->active) && isset($data->type)){
+            if($data->type === 'nodeMCU' || $data->type === 'Hue white lamp' || $data->type === 'Hue white spot'){
+                $device = new Device();
+                $device->setIDDevice($data->id_device);
+                $device->setActive($data->active);
+                $result = $deviceService->setActiveStatus($device);
+                if(!empty($result['status'])){
+                    return response()->json(['status' => true]);
+                }
+                return response()->json(['status' => false]);
+            }else{
+                $group = new GroupHueLights();
+                $group->setActive($data->active);
+                $group->setIdGroup($data->id_device);
+                $result = $groupHueLightsService->setActiveStatus($group);
+                if(!empty($result['status'])){
+                    return response()->json(['status' => true]);
+                }
+                return response()->json(['status' => false]);
             }
-            return response()->json(['status' => false]);
         }
         return response()->json(['status' => false]);
     }
