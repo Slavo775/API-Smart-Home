@@ -97,6 +97,11 @@ class DeviceService
         return ['status' => true ,'result' => $result];
     }
 
+    /**
+     * set status of device
+     * @param Device $device
+     * @return array
+     */
     public function setActiveStatus(Device $device){
         $sql = DB::raw('UPDATE device SET active = :active WHERE id_device = :id_device');
         $bind = ['active' => $device->isActive(), 'id_device' => $device->getIDDevice()];
