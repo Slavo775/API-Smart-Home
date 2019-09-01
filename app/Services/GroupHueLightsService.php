@@ -81,10 +81,18 @@ class GroupHueLightsService
         return ['status' => true];
     }
 
+    /**
+     * @return array
+     * @throws invalidArrayKeyException
+     */
     public function getGroupsWithDevices(){
         $sql = DB::raw('SELECT * FROM group_hue_lights WHERE active = 1');
         $result = DB::select($sql);
-        $result = $this->fillArray($result, 'id_from_bridge');
+        try{$result = $this->fillArray($result, 'id_from_bridge');}
+        catch (invalidArrayKeyException $ex){
+            return ['status' => false, 'message' => $ex->getMessage()];
+        }
+
         $this->getInfoFromBridge($result);
         return ['result' => $result];
     }
