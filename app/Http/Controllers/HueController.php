@@ -19,7 +19,13 @@ class HueController extends Controller
      * @throws \App\Exceptions\invalidArrayKeyException
      */
     public function getAllActive(GroupHueLightsService $groupHueLightsService){
-        return response()->json(['result' => $groupHueLightsService->getGroupsWithDevices()['result']]);
+        $result = $groupHueLightsService->getGroupsWithDevices();
+        if(!empty($result['result'])){
+            return response()->json(['result' => $result['result']]);
+        }else{
+            return response()->json(['message' => !empty($result['message']) ? $result['message'] : 'Undefined Error!']);
+        }
+
     }
 
 }
