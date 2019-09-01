@@ -110,6 +110,9 @@ class GroupHueLightsService
             $groups[$key]->on = $json->action->on;
             $groups[$key]->bri = $json->action->bri;
             $groups[$key]->lights = $this->getHueByIp($json->lights);
+            if(empty($groups[$key]->lights)){
+                unset($groups[$key]);
+            }
         }
     }
 
@@ -140,7 +143,7 @@ class GroupHueLightsService
             $sql = DB::raw('SELECT * FROM device WHERE active = 1 AND ip = :ip');
             $bind = ['ip' => $light];
             $result = DB::select($sql, $bind);
-            if(!isset($result)){
+            if(empty($result)){
                 continue;
             }
             $hueContent = file_get_contents('http://192.168.31.36/api/AH7Or1g7rXJhJbOwv1VEDA-kPLra6O-JAu3waKqk/lights/'.$light);
