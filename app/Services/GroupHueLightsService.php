@@ -147,6 +147,7 @@ class GroupHueLightsService
             $lightJson = json_decode($hueContent);
             $result[0]->on = $lightJson->state->on;
             $result[0]->bri = $lightJson->state->bri;
+            $result[0]->reachable = $lightJson->state->reachable;
             $result_lights[$light] = $result[0];
         }
         return $result_lights;
