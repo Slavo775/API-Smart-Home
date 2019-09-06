@@ -113,9 +113,9 @@ class DeviceController extends Controller
             if(!empty($status)){
                 return response()->json(['status' => 'ok']);
             }
-            return response()->json(['status' => 'false', 'message' => 'Cannot insert to database']);
+            return response()->json(['status' => 'false', 'message' => 'Cannot insert to database', 'code' => 500]);
         }
-        return response()->json(['status' => 'false', 'message' => 'Parameters is not correct!']);
+        return response()->json(['status' => 'false', 'message' => 'Parameters is not correct!', 'code' => 502]);
     }
 
     /**
@@ -142,11 +142,17 @@ class DeviceController extends Controller
             $result['nonactiveGroup'] = $resultNonactiveGroup['result'];
         }
         if(!empty($result)){
-            return response()->json(['status' => true, 'data' => $result]);
+            return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!', 'data' => $result]);
         }
-        return response()->json(['status' => false, 'data' => null]);
+        return response()->json(['status' => false, 'code' => 404, 'message' => 'Zariadenia sa nenasli!', 'data' => null]);
     }
 
+    /**
+     * @param GroupHueLightsService $groupHueLightsService
+     * @param DeviceService $deviceService
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function setStatus(GroupHueLightsService $groupHueLightsService, DeviceService $deviceService, Request $request){
         $data = json_decode($request->getContent());
         if(isset($data->id_device) && isset($data->active) && isset($data->type)){
@@ -165,11 +171,11 @@ class DeviceController extends Controller
                 $group->setIdGroup($data->id_device);
                 $result = $groupHueLightsService->setActiveStatus($group);
                 if(!empty($result['status'])){
-                    return response()->json(['status' => true]);
+                    return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!']);
                 }
-                return response()->json(['status' => false]);
+                return response()->json(['status' => false, 'code' => 404, 'message' => 'Ok!']);
             }
         }
-        return response()->json(['status' => false]);
+        return response()->json(['status' => false, 'code' => 502, 'message' => 'Data su nespravne!']);
     }
 }

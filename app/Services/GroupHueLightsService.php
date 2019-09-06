@@ -93,16 +93,23 @@ class GroupHueLightsService
             return ['status' => false, 'message' => $ex->getMessage()];
         }
 
-        $this->getInfoFromBridge($result);
-        return ['result' => $result];
+        if(!$this->getInfoFromBridge($result)){
+            return ['status' => false, 'message' => 'Bridge is down!'];
+        }
+        return ['status' => true, 'result' => $result];
     }
 
     /**
      * @param array $groups
+     * @return bool
      */
     private function getInfoFromBridge(array &$groups){
-        $hueContent = file_get_contents('http://192.168.31.36/api/AH7Or1g7rXJhJbOwv1VEDA-kPLra6O-JAu3waKqk/groups/');
-        $hueJson = json_decode($hueContent);
+        try{
+            $hueContent = file_get_contents('http://192.168.31.36/api/AH7Or1g7rXJhJbOwv1VEDA-kPLra6O-JAu3waKqk/groups/');
+            $hueJson = json_decode($hueContent);
+        }catch (\Exception $ex){
+            return false;
+        }
         foreach($hueJson as $key => $json){
             if(!isset($groups[$key])){
                 continue;
@@ -114,6 +121,7 @@ class GroupHueLightsService
                 unset($groups[$key]);
             }
         }
+        return true;
     }
 
     /**

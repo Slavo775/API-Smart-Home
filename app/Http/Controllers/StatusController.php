@@ -38,9 +38,9 @@ class StatusController extends Controller
        }
 
        if(!empty($status)){
-           return response()->json(['status' => true, 'data' => $status]);
+           return response()->json(['status' => true, 'data' => $status, 'code' => 200, 'message' => 'Ok!']);
        }
-       return response()->json(['status' => false, 'data' => null]);
+       return response()->json(['status' => true, 'data' => null, 'code' => 200, 'message' => 'Všetko vyriešené!']);
     }
 
     public function setResolved(StatusService $statusService, Request $request){
@@ -51,11 +51,11 @@ class StatusController extends Controller
             $statusModel->setResolvedText($data->status_text);
             $status = $statusService->setResolvedStatus($statusModel);
             if($status){
-                return response()->json(['status' => true]);
+                return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!']);
             }
-            return response()->json(['status' => false]);
+            return response()->json(['status' => false, 'code' => 500, 'message' => 'Nie je mozne zapisat do databazy!']);
         }
-        return response()->json(['status' => false]);
+        return response()->json(['status' => false, 'code' => 502, 'message' => 'Data su nespravne!']);
     }
 
 }

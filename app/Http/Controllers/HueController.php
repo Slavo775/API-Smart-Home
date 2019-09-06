@@ -20,10 +20,10 @@ class HueController extends Controller
      */
     public function getAllActive(GroupHueLightsService $groupHueLightsService){
         $result = $groupHueLightsService->getGroupsWithDevices();
-        if(!empty($result['result'])){
-            return response()->json(['result' => $result['result']]);
+        if(!empty($result['status'])){
+            return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!', 'result' => $result['result']]);
         }else{
-            return response()->json(['message' => !empty($result['message']) ? $result['message'] : 'Undefined Error!']);
+            return response()->json(['status' => false, 'code' => 404, 'message' => !empty($result['message']) ? $result['message'] : 'Undefined Error!']);
         }
 
     }
