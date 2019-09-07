@@ -23,3 +23,16 @@ The Lumen framework is open-sourced software licensed under the [MIT license](ht
 ## Subscribe
 
 Application provide SQL database handling, provide and save data from database
+
+##API Response
+```json
+{
+ "status": "true or false.",
+ "code": "error code (int)",
+ "message": "message of status",
+ "data":  
+        {
+         "data": "in array" 
+        }
+}
+```
