@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Facade;
 
 class GroupHueLightsService
 {
+    public const HUE_BRIDGE_APPLICATION_HASH = 'AH7Or1g7rXJhJbOwv1VEDA-kPLra6O-JAu3waKqk';
+    public const HUE_BRIDGE_IP_ADDRESS = '192.168.31.36';
+
     public function __construct()
     {
         /**
@@ -36,46 +39,49 @@ class GroupHueLightsService
     /**
      * @return array
      */
-    public function getAllActiveGroups(){
+    public function getAllActiveGroups()
+    {
         $sql = DB::raw('SELECT ghl.id_group as id_device, ghl.name, ghl.id_group as ip, ghl.active  FROM group_hue_lights ghl WHERE active = 1');
         $results = DB::select($sql);
-        foreach($results as $key => $result){
+        foreach ($results as $key => $result) {
             $results[$key]->mac = '-';
             $results[$key]->description = '-';
             $results[$key]->type = 'Group';
         }
-        if(empty($results)){
+        if (empty($results)) {
             return ['status' => false, 'result' => null];
         }
-        return ['status' => true ,'result' => $results];
+        return ['status' => true, 'result' => $results];
     }
 
     /**
      * @return array
      */
-    public function getAllNonActiveGroups(){
+    public function getAllNonActiveGroups()
+    {
         $sql = DB::raw('SELECT ghl.id_group as id_device, ghl.name, ghl.id_group as ip, ghl.active  FROM group_hue_lights ghl WHERE active = 0');
         $results = DB::select($sql);
-        foreach($results as $key => $result){
+        foreach ($results as $key => $result) {
             $results[$key]->mac = '-';
             $results[$key]->description = '-';
             $results[$key]->type = 'Group';
         }
-        if(empty($results)){
+        if (empty($results)) {
             return ['status' => false, 'result' => null];
         }
-        return ['status' => true ,'result' => $results];
+        return ['status' => true, 'result' => $results];
     }
 
     /**
      * @param GroupHueLights $groupHueLights
      * @return array
      */
-    public function setActiveStatus( GroupHueLights $groupHueLights){
+    public function setActiveStatus(GroupHueLights $groupHueLights)
+    {
         $sql = DB::raw('UPDATE group_hue_lights SET active = :active WHERE id_group = :id_device');
         $bind = ['active' => $groupHueLights->isActive(), 'id_device' => $groupHueLights->getIdGroup()];
         $result = DB::update($sql, $bind);
-        if(empty($result)){
+        if (empty($result)) {
             return ['status' => false];
         }
         return ['status' => true];
@@ -85,15 +91,17 @@ class GroupHueLightsService
      * @return array
      * @throws invalidArrayKeyException
      */
-    public function getGroupsWithDevices(){
+    public function getGroupsWithDevices()
+    {
         $sql = DB::raw('SELECT * FROM group_hue_lights WHERE active = 1');
         $result = DB::select($sql);
-        try{$result = $this->fillArray($result, 'id_from_bridge');}
-        catch (invalidArrayKeyException $ex){
+        try {
+            $result = $this->fillArray($result, 'id_from_bridge');
+        } catch (invalidArrayKeyException $ex) {
             return ['status' => false, 'message' => $ex->getMessage()];
         }
 
-        if(!$this->getInfoFromBridge($result)){
+        if (!$this->getInfoFromBridge($result)) {
             return ['status' => false, 'message' => 'Bridge is down!'];
         }
         return ['status' => true, 'result' => $result];
@@ -103,21 +111,23 @@ class GroupHueLightsService
      * @param array $groups
      * @return bool
      */
-    private function getInfoFromBridge(array &$groups){
-        try{
-            $hueContent = file_get_contents('http://192.168.31.36/api/AH7Or1g7rXJhJbOwv1VEDA-kPLra6O-JAu3waKqk/groups/');
+    private function getInfoFromBridge(array &$groups)
+    {
+        try {
+            $hueContent = file_get_contents('http://' . self::HUE_BRIDGE_IP_ADDRESS . '/api/' . self::HUE_BRIDGE_APPLICATION_HASH . '/groups/');
             $hueJson = json_decode($hueContent);
-        }catch (\Exception $ex){
+        } catch (\Exception $ex) {
             return false;
         }
-        foreach($hueJson as $key => $json){
-            if(!isset($groups[$key])){
+        foreach ($hueJson as $key => $json) {
+            if (!isset($groups[$key])) {
                 continue;
             }
             $groups[$key]->on = $json->action->on;
             $groups[$key]->bri = $json->action->bri;
+
             $groups[$key]->lights = $this->getHueByIp($json->lights);
-            if(empty($groups[$key]->lights)){
+            if (empty($groups[$key]->lights)) {
                 unset($groups[$key]);
             }
         }
@@ -130,10 +140,11 @@ class GroupHueLightsService
      * @return array
      * @throws invalidArrayKeyException
      */
-    private function fillArray(array $array, string $array_key){
+    private function fillArray(array $array, string $array_key)
+    {
         $new_array = [];
-        foreach($array as $item){
-            if(!isset($item->$array_key)){
+        foreach ($array as $item) {
+            if (!isset($item->$array_key)) {
                 throw new invalidArrayKeyException('Key not exist in array');
             }
             $new_array[$item->$array_key] = $item;
@@ -145,16 +156,21 @@ class GroupHueLightsService
      * @param array $lights
      * @return array
      */
-    private function getHueByIp(array $lights){
+    private function getHueByIp(array $lights)
+    {
         $result_lights = [];
-        foreach($lights as $light){
+        foreach ($lights as $light) {
             $sql = DB::raw('SELECT * FROM device WHERE active = 1 AND ip = :ip');
             $bind = ['ip' => $light];
             $result = DB::select($sql, $bind);
-            if(empty($result)){
+            if (empty($result)) {
                 continue;
             }
-            $hueContent = file_get_contents('http://192.168.31.36/api/AH7Or1g7rXJhJbOwv1VEDA-kPLra6O-JAu3waKqk/lights/'.$light);
+            try {
+                $hueContent = file_get_contents('http://' . self::HUE_BRIDGE_IP_ADDRESS . '/api/' . self::HUE_BRIDGE_APPLICATION_HASH . '/lights/' . $light);
+            } catch (\Exception $ex) {
+                return [];
+            }
             $lightJson = json_decode($hueContent);
             $result[0]->on = $lightJson->state->on;
             $result[0]->bri = $lightJson->state->bri;

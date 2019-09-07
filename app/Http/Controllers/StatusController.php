@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Services\ResponseService;
 use App\Services\StatusService;
 use App\Status;
 use Illuminate\Http\Request;
@@ -18,9 +19,10 @@ class StatusController extends Controller
     /**
      * get all status with value 0 of column resolved
      * @param StatusService $statusService
+     * @param ResponseService $responseService
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getAllUnresolvedStatus(StatusService $statusService){
+    public function getAllUnresolvedStatus(StatusService $statusService, ResponseService $responseService){
        $status = [];
        $errors = $statusService->getErrorStatus();
        $warnings = $statusService->getWarningStatus();
@@ -38,12 +40,18 @@ class StatusController extends Controller
        }
 
        if(!empty($status)){
-           return response()->json(['status' => true, 'data' => $status, 'code' => 200, 'message' => 'Ok!']);
+           return response()->json($responseService->createSuccessResponse($status));
        }
-       return response()->json(['status' => true, 'data' => null, 'code' => 200, 'message' => 'Všetko vyriešené!']);
+       return response()->json($responseService->createSuccessResponse(['result' => 'Success!'],ResponseService::CODE_ALL_RESOLVED, ResponseService::ALL_RESOLVED_MESSAGE));
     }
 
-    public function setResolved(StatusService $statusService, Request $request){
+    /**
+     * @param StatusService $statusService
+     * @param Request $request
+     * @param ResponseService $responseService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setResolved(StatusService $statusService, Request $request, ResponseService $responseService){
         $data = json_decode($request->getContent());
         $statusModel = new Status();
         if(isset($data->id_status) && isset($data->status_text)){
@@ -51,11 +59,11 @@ class StatusController extends Controller
             $statusModel->setResolvedText($data->status_text);
             $status = $statusService->setResolvedStatus($statusModel);
             if($status){
-                return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!']);
+                return response()->json($responseService->createSuccessResponse(['result' => 'Success!']));
             }
-            return response()->json(['status' => false, 'code' => 500, 'message' => 'Nie je mozne zapisat do databazy!']);
+            return response()->json($responseService->createErrorResponse(ResponseService::CODE_CANNOT_INSERT_TO_DATABASE, ResponseService::CANNOT_INSERT_MESSAGE));
         }
-        return response()->json(['status' => false, 'code' => 502, 'message' => 'Data su nespravne!']);
+        return response()->json($responseService->createErrorResponse(ResponseService::CODE_DATA_IS_INCORRECT, ResponseService::DATA_IS_INCORRECT_MESSAGE));
     }
 
 }

@@ -10,20 +10,22 @@ namespace App\Http\Controllers;
 
 
 use App\Services\GroupHueLightsService;
+use App\Services\ResponseService;
 
 class HueController extends Controller
 {
     /**
      * @param GroupHueLightsService $groupHueLightsService
+     * @param ResponseService $responseService
      * @return \Illuminate\Http\JsonResponse
      * @throws \App\Exceptions\invalidArrayKeyException
      */
-    public function getAllActive(GroupHueLightsService $groupHueLightsService){
+    public function getAllActive(GroupHueLightsService $groupHueLightsService, ResponseService $responseService){
         $result = $groupHueLightsService->getGroupsWithDevices();
         if(!empty($result['status'])){
-            return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!', 'result' => $result['result']]);
+            return response()->json($responseService->createSuccessResponse($result['result']));
         }else{
-            return response()->json(['status' => false, 'code' => 404, 'message' => !empty($result['message']) ? $result['message'] : 'Undefined Error!']);
+            return response()->json($responseService->createErrorResponse(ResponseService::CODE_DEVICE_ERROR, !empty($result['message']) ? $result['message'] : 'Undefined Error!'));
         }
 
     }

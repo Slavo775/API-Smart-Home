@@ -13,6 +13,8 @@ use App\Exceptions\ipAdressIsNotValidException;
 use App\GroupHueLights;
 use App\Services\DeviceService;
 use App\Services\GroupHueLightsService;
+use App\Services\ResponseService;
+use App\Services\StatusService;
 use App\Services\ValidationService;
 use App\Device;
 use Illuminate\Http\JsonResponse;
@@ -26,9 +28,10 @@ class DeviceController extends Controller
      *@param DeviceService $device
      *@param ValidationService $validate
      *@param Request $request
+     *@param ResponseService $responseService
      *@return \Illuminate\Http\JsonResponse
      */
-    public function addDevice(DeviceService $device, ValidationService $validate , Request $request) :\Illuminate\Http\JsonResponse
+    public function addDevice(DeviceService $device, ValidationService $validate , Request $request, ResponseService $responseService) :\Illuminate\Http\JsonResponse
     {
         $data = json_decode($request->getContent());
         $name = $data->name;
@@ -41,7 +44,7 @@ class DeviceController extends Controller
             $IP_address = $validate->validateIPAddress($IP_address);
         }
         catch (ipAdressIsNotValidException $ex){
-           return response()->json(['status' => 'false' , 'message' => $ex->getMessage()]);
+           return response()->json($responseService->createErrorResponse(ResponseService::CODE_INVALID_IP, $ex->getMessage()));
         }
         if(isset($name)
             && isset($type)
@@ -58,10 +61,10 @@ class DeviceController extends Controller
             $postDevice->setDescription($description);
 //            $postDevice->setStatus($status);
             $device->addDevice($postDevice);
-            return response()->json(['status' => 'true']);
+            return response()->json($responseService->createSuccessResponse(['result' => 'success']));
         }
 
-        return response()->json(['status' => 'false', 'message' => 'Please fill all field!']);
+        return response()->json($responseService->createErrorResponse(ResponseService::CODE_EMPTY_INPUT, ResponseService::EMPTY_INPUT_MESSAGE));
 
     }
 
@@ -71,29 +74,30 @@ class DeviceController extends Controller
      * @param DeviceService $device
      * @param ValidationService $validation
      * @param Request $request
+     * @param ResponseService $responseService
      * @return JsonResponse
      */
-    public function addDeviceIp(DeviceService $device, ValidationService $validation, Request $request){
+    public function addDeviceIp(DeviceService $device, ValidationService $validation, Request $request, ResponseService $responseService){
 
         $data = json_decode($request->getContent());
 
         try{
             $json = file_get_contents('http://'. $data->IP .':8080/deviceStatus');
         }catch (\Exception $ex){
-            return response()->json(['status' => 'false', 'message' => 'Wrong IP or device down']);
+            return response()->json($responseService->createErrorResponse(ResponseService::CODE_DEVICE_NOT_REACHABLE, ResponseService::DEVICE_NOT_REACHABLE));
         }
         $jsonDecode = json_decode($json);
         try{
            $validation->validateIPAddress($jsonDecode->ip);
         }
         catch (ipAdressIsNotValidException $ex){
-            return response()->json(['status' => 'false' , 'message' => $ex->getMessage()]);
+            return response()->json($responseService->createErrorResponse(ResponseService::CODE_INVALID_IP, $ex->getMessage()));
         }
 
         if(!empty($jsonDecode->mac)){
             $result = $device->findDeviceByMac($jsonDecode->mac);
             if(empty($result['status'])){
-                return response()->json(['status' => 'false' , 'message' => 'Device exist in database with ip '.$result['ip'][0]->ip]);
+                return response()->json($responseService->createErrorResponse(ResponseService::CODE_DEVICE_EXIST_IN_DATABASE, ResponseService::DEVICE_EXIST_IN_DATABASE_MESSAGE . $result['ip'][0]->ip . '!'));
             }
         }
         if(isset($jsonDecode->name)
@@ -111,20 +115,21 @@ class DeviceController extends Controller
             $postDevice->setDescription($jsonDecode->description);
             $status = $device->addDevice($postDevice);
             if(!empty($status)){
-                return response()->json(['status' => 'ok']);
+                return response()->json($responseService->createSuccessResponse(['result' => 'success']));
             }
-            return response()->json(['status' => 'false', 'message' => 'Cannot insert to database', 'code' => 500]);
+            return response()->json($responseService->createErrorResponse(ResponseService::CODE_CANNOT_INSERT_TO_DATABASE, ResponseService::CODE_CANNOT_INSERT_TO_DATABASE));
         }
-        return response()->json(['status' => 'false', 'message' => 'Parameters is not correct!', 'code' => 502]);
+        return response()->json($responseService->createErrorResponse(ResponseService::CODE_DATA_IS_INCORRECT, ResponseService::DATA_IS_EMPTY_MESSAGE));
     }
 
     /**
      * this function get all active and nonactive devices
      * @param DeviceService $deviceService
      * @param GroupHueLightsService $groupHueLightsService
+     * @param ResponseService $responseService
      * @return JsonResponse
      */
-    public function allDevice(GroupHueLightsService $groupHueLightsService, DeviceService $deviceService){
+    public function allDevice(GroupHueLightsService $groupHueLightsService, DeviceService $deviceService, ResponseService $responseService){
         $resultActive = $deviceService->findAllActiveDevice();
         $resultNonactive = $deviceService->findAllNonactiveDevice();
         $resultActiveGroup = $groupHueLightsService->getAllActiveGroups();
@@ -142,18 +147,19 @@ class DeviceController extends Controller
             $result['nonactiveGroup'] = $resultNonactiveGroup['result'];
         }
         if(!empty($result)){
-            return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!', 'data' => $result]);
+            return response()->json($responseService->createSuccessResponse($result));
         }
-        return response()->json(['status' => false, 'code' => 404, 'message' => 'Zariadenia sa nenasli!', 'data' => null]);
+        return response()->json($responseService->createErrorResponse(ResponseService::CODE_EMPTY_DEVICE_LIST, ResponseService::EMPTY_DEVICE_LIST_MESSAGE));
     }
 
     /**
      * @param GroupHueLightsService $groupHueLightsService
      * @param DeviceService $deviceService
      * @param Request $request
+     * @param ResponseService $responseService
      * @return JsonResponse
      */
-    public function setStatus(GroupHueLightsService $groupHueLightsService, DeviceService $deviceService, Request $request){
+    public function setStatus(GroupHueLightsService $groupHueLightsService, DeviceService $deviceService, Request $request, ResponseService $responseService){
         $data = json_decode($request->getContent());
         if(isset($data->id_device) && isset($data->active) && isset($data->type)){
             if($data->type === 'nodeMCU' || $data->type === 'Hue white lamp' || $data->type === 'Hue white spot'){
@@ -171,11 +177,11 @@ class DeviceController extends Controller
                 $group->setIdGroup($data->id_device);
                 $result = $groupHueLightsService->setActiveStatus($group);
                 if(!empty($result['status'])){
-                    return response()->json(['status' => true, 'code' => 200, 'message' => 'Ok!']);
+                    return response()->json($responseService->createSuccessResponse(['result' => 'Success!']));
                 }
-                return response()->json(['status' => false, 'code' => 404, 'message' => 'Ok!']);
+                return response()->json($responseService->createErrorResponse(ResponseService::CODE_DEVICE_SET_STATUS_FAIL, ResponseService::DEVICE_SET_STATUS_FAIL_MESSAGE));
             }
         }
-        return response()->json(['status' => false, 'code' => 502, 'message' => 'Data su nespravne!']);
+        return response()->json($responseService->createErrorResponse(ResponseService::CODE_DATA_IS_INCORRECT, ResponseService::DATA_IS_INCORRECT_MESSAGE));
     }
 }
