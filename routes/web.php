@@ -43,3 +43,8 @@ $router->group(['prefix' => 'test1'], function () use($router){
         echo "test2";
     });
 });
+$router->group(['prefix' => 'user'], function() use($router){
+   $router->get('all-user', ['as' => 'all-user', 'uses' => 'UserController@getAllUser']);
+   $router->post('register', ['as' => 'register', 'uses' => 'UserController@registerUser']);
+   $router->post('user-by-id', ['as' => 'user-by-id', 'uses' => 'UserController@getUserById']);
+});

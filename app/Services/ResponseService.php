@@ -41,6 +41,8 @@ class ResponseService
     public const CODE_CANNOT_INSERT_TO_DATABASE = 701;
     /** @var int  */
     public const CODE_DEVICE_EXIST_IN_DATABASE = 702;
+    /** @var int  */
+    public const CODE_CANNOT_SELECT_FROM_DATABASE = 703;
 
     /** DEVICES ERRORS */
     public const CODE_DEVICE_ERROR = 800;
@@ -75,6 +77,8 @@ class ResponseService
     public const DATA_IS_INCORRECT_MESSAGE = 'Data is incorrect!';
     /** @var string  */
     public const ALL_RESOLVED_MESSAGE = 'All resolved!';
+    /** @var string  */
+    public const CANNOT_SELECT_FROM_DB = 'Cannot select from database!';
 
 
 
@@ -102,7 +106,7 @@ class ResponseService
      * @param string $message
      * @return array
      */
-    public function createSuccessResponse(array $data, int $code = self::CODE_SUCCESS, string $message = self::SUCCESS_MESSAGE){
+    public function createSuccessResponse(array $data = ['result' => 'Success!'], int $code = self::CODE_SUCCESS, string $message = self::SUCCESS_MESSAGE){
         return !empty($data) ?  ['status' => true, 'code' => $code, 'message' => $message, 'data' => $data] : ['status' => false, 'code' => self::CODE_DATA_IS_EMPTY, 'message' => self::DATE_EMPTY_MESSAGE, 'data' => null];
     }
 
