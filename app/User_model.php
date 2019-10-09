@@ -11,7 +11,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserModel extends Model
+class User_model extends Model
 {
     /** @var integer */
     private $id_user;

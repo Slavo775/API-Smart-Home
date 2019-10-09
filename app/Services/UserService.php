@@ -9,7 +9,6 @@
 namespace App\Services;
 
 use App\User_model;
-use App\UserModel;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\DB;
@@ -34,10 +33,10 @@ class UserService
 
     /**
      * Add user into database
-     * @param UserModel $user
+     * @param User_model $user
      * @return bool
      */
-    public function addUser(UserModel $user): bool
+    public function addUser(User_model $user): bool
     {
         $sql = DB::raw('INSERT INTO user (name) VALUES (:name)');
         $result = DB::insert($sql, ['name' => $user->getName()]);
@@ -56,10 +55,10 @@ class UserService
 
     /**
      * Get one user by user id
-     * @param UserModel $user
+     * @param User_model $user
      * @return array
      */
-    public function getUserById(UserModel $user){
+    public function getUserById(User_model $user){
         $sql = DB::raw('SELECT * FROM user WHERE id_user = :id_user LIMIT 1');
         $result = DB::select($sql, ['id_user' => $user->getIdUser()]);
         return $result;
